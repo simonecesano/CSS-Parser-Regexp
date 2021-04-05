@@ -1,0 +1,112 @@
+=head1 CSS::Parser::Regexp - a regexp-based CSS parser with at-rule support
+
+=head2 SYNOPSIS
+
+    use CSS::Parser::Regexp;
+    use Data::Dumper;
+
+    $\ = "\n";
+
+    my $css = <<CSS
+    .someclass {
+        color: limegreen;
+        font-size: 12pt;
+    }
+    CSS
+    ;
+
+    my $p = CSS::Parser::Regexp->new;
+
+    $p->parse($css);
+
+    print Dumper($p->rules);
+
+    print Dumper($p->to_tree);
+
+    print $p->stringify;
+
+
+=head2 DESCRIPTION
+
+This module parses CSS with at-rules into rule lists or trees, and stringifies it back
+
+
+=head2 FUNCTIONS
+
+
+=head3 new
+
+    my $p = CSS::Parser::Regexp->new;
+
+Creates a new CSS::Parser::Regexp instance.
+
+
+=head3 parse
+
+    $p->parse($css);
+
+Parses a CSS string. Returns the CSS::Parser::Regexp object.
+
+
+=head3 rules
+
+    my $rules = $p->parse($css)->rules
+
+Returns the list of parsed rules as an arrayref.
+
+
+=head3 stringify
+
+    my $rules = $p->parse($css)->stringify
+
+Returns the list of parsed rules stringified into CSS.
+
+
+=head3 to_tree
+
+    my $rules = $p->parse($css)->to_tree
+
+Returns the list of parsed rules as a tree of hashrefs
+
+
+=head2 TO DO
+
+=over
+
+=item better sorting of rules in stringify
+
+=item documenting the rule list and tree structures
+
+=item functionality for adding/removing rules
+
+=back
+
+
+=head2 SEE ALSO
+
+=over
+
+=item CSS
+
+=item CSS::DOM
+
+=item CSS::Tiny
+
+=back
+
+
+=head2 BUGS and CAVEATS
+
+This module is tested against Bootstrap, Normalize.css and Pure.css. I don't know if there is gnarly CSS out there that this module fails against.
+
+
+=head2 AUTHORS
+
+Simone Cesano
+
+
+=head2 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2021 by Simone Cesano.
+
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
