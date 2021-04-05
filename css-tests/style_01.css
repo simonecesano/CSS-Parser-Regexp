@@ -1,0 +1,110 @@
+@import url("chrome://communicator/skin/");
+
+.bigtiles .leaflet-control-zoom-out,
+.bigtiles .leaflet-control-zoom-out:visited,
+.bigtiles .leaflet-control-zoom-in,
+.bigtiles .leaflet-control-zoom-in:visited
+{ color: black }
+
+.bigtiles a { text-decoration:none }
+.bigtiles a {color:#dddddd;}         /* Unvisited link  */
+.bigtiles a:visited {color:#dddddd;} /* Visited link    */
+.bigtiles a:hover {color:#dddddd;}   /* Mouse over link */
+.bigtiles a:active {color:#dddddd;}  /* Selected link   */
+
+/* .bigtiles { padding-left: 6px; display: inline-block } */
+
+@media screen and (max-width: 767px) {
+    :root { --bigtilesize: calc((50vw - 1px) - 24px) }
+
+    .bigtiles {
+    	width: calc(100vw - 24px);
+    	padding-top: 6px;
+    	padding-left: 0px;
+    }
+
+    .bigtile {
+	width: var(--bigtilesize);
+	height: calc(1.5 * var(--bigtilesize));
+	display: inline-block;
+    }
+    .bigtile > .header {
+	height: calc(0.5 * var(--bigtilesize));
+    }
+    .bigtile > .details {
+	height: calc(1 * var(--bigtilesize));
+	background-color: #dddddd88
+    }
+    .bigtile > .map {
+	height: calc(1 * var(--bigtilesize));
+	width:  calc(1 * var(--bigtilesize));
+    }
+    h1 { display: none }
+}
+
+.bigtile {
+    display: inline-block;
+    margin: 6px;
+    padding-top: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    
+    float:left;
+    clear:none;  
+}
+
+
+@media screen and (min-width: 768px) {
+    :root { --bigtilesize: max(144px, calc(-18px + (100vw - 12px) / 8)) }
+    .bigtiles {
+	/*           h1   + bigtile */
+	width: calc(100%);
+    }
+    .bigtile.lg {
+	width: var(--bigtilesize);
+	height: calc(1.5 * var(--bigtilesize));
+    }
+    .bigtile > .header {
+	height: calc(0.5 * var(--bigtilesize));
+    }
+    .bigtile > .details {
+	height: calc(1 * var(--bigtilesize));
+	background-color: #dddddd88
+    }
+    .bigtile > .map {
+	height: calc(1 * var(--bigtilesize));
+	width:  calc(1 * var(--bigtilesize));
+    }
+
+    
+    h1 { font-weight: bold; font-size: 32px; margin-left: 6px; margin-top: 6px; margin-bottom: 4px }
+    #landing { margin-left: 18px }
+
+    .worldmap { height: 60vh; width: 100% }
+}
+
+.bigtile > .header, .bigtile > .details {
+    padding-top: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+
+.bigtile.header { font-weight: bold }
+
+.bookmark { background-color: #008080 }
+.route    { background-color: #70a494 }
+.explore  { background-color: #de8a5a }
+.guides   { background-color: #ca562c }
+
+.something::before {content: "{foo}"}
+
+/* @charset "utf-8"; */
+
+@supports not (display: grid) {
+  div {
+    float: right;
+  }
+}
+
+
