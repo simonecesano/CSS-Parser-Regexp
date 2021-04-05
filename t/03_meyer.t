@@ -8,7 +8,7 @@ use warnings;
 my @files;
 
 find(sub {
-	 push @files, $File::Find::name if -f
+	 push @files, $File::Find::name if (-f && /\.css$/)
      }, 'css-tests');
 
 my $p = CSS::Parser::Regexp->new;
