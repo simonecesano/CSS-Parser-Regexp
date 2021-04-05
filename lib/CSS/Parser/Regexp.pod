@@ -105,6 +105,11 @@ This module is tested against Bootstrap, Normalize.css and Pure.css. I don't kno
 Simone Cesano
 
 
+=head2 CREDITS
+
+For testing purposes, this distribution includes files from L<Bootstrap|https://getbootstrap.com/>, L<Pure.css|https://purecss.io/>
+and L<Normalize.css|https://necolas.github.io/normalize.css/>.
+
 =head2 COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2021 by Simone Cesano.
