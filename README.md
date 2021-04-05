@@ -1,4 +1,4 @@
-# CSS::Parser::Regexp - a regexp-based CSS parses with at-rule support
+# CSS::Parser::Regexp - a regexp-based CSS parser with at-rule support
 
 ## SYNOPSIS
     
