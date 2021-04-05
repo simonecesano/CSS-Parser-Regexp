@@ -174,7 +174,6 @@ sub post_process_rules {
 
 sub process_rules {
     my $rules = pre_process_rules(shift());
-    print dumper $rules;
     return post_process_rules($rules);
 }
 
@@ -194,6 +193,7 @@ sub strip_brackets {
 	s/\s*\}\s*$//;
 	#--------------------------------------
 	# this could be removed for debugging
+	# it just removes newlines
 	#--------------------------------------
 	s/\n/ /g;
 	s/ +/ /g;
@@ -292,10 +292,8 @@ sub stringify_rule {
     if ($single{$k}) {
 	for my $r (@$v) {
 	    $s .= "$k " . (join '', (map {
-		$r->{$_} ?
-		    sprintf ("$indent_b%s:%s;", $_, $r->{$_})
-		    :
-		    sprintf ("$indent_b%s;", $_)
+		$r->{$_} ? sprintf ("$indent_b%s:%s;", $_, $r->{$_})
+		    : sprintf ("$indent_b%s;", $_)
 		} sort keys %$r)) . "\n";
 	}
     # at-rules that can be repeated, but should not be merged: font-face counter-style
