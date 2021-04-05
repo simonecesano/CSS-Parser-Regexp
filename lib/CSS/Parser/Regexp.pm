@@ -20,7 +20,7 @@ sub new {
 
 sub parse {
     my $self = shift;
-    $self->rules(process_rules(@_));
+    $self->rules(process_rules(shift()));
     return $self;
 }
 
@@ -49,6 +49,11 @@ sub to_tree {
 no warnings qw/uninitialized/;
 
 sub process_ats {
+    #---------------------------------------------------------
+    # this collects all the nested at-rules
+    # that precede the currect one by going back and out
+    # until reaching level 1 - the first
+    #---------------------------------------------------------
     my $idx = shift;
     my @snippets = @_;
 
@@ -79,7 +84,7 @@ sub strip_comments {
 
 sub parse_style {
     my $t = shift;
-
+    # parses string of the type "id : value"
     for ($t) {
 	s/\s*\{\s*//g;
 	s/\s*\}\s*//g;
@@ -95,6 +100,11 @@ sub parse_style {
 
 sub separate {
     my $css = shift;
+    #------------------------------------------
+    # separates the at-rule or the selector
+    # from the content
+    #------------------------------------------
+
     my ($sel, $rest) = $css =~ /^\s*([^\{\;]+)\s*(.+)/ms;
 
     $sel =~ s/\n/ /g;
@@ -128,9 +138,6 @@ sub pre_process_rules {
     $rest = trim($rest);
 
     push @$cum, { sel => $sel, style => $style, rest => $rest, depth => $depth, type => $type };
-    # [ $sel, $style, $rest, $depth, $type ];
-
-    # print dumper $cum if $CSS::Parser::Regexp::DEBUG;
 
     $type = block_type($style);
 
@@ -189,9 +196,14 @@ sub strip_brackets {
 
 sub block_type {
     my $t = shift;
-
+    #---------------------------------------
+    # identifies the block type
+    #---------------------------------------
     for ($t) {
+	# begins with @ is an at-rule
 	/^\s*\@\w+/   && return 'at';
+	# begins with something followed by a bracket
+	# is a selector + style
 	/\s*[^\{]+\s*(?<!\")\{/  && return 'sel';
     }
     return 'style';
@@ -206,6 +218,11 @@ sub pointer_to_element {
 }
 
 sub rules_to_tree {
+    # ----------------------------------------------------------------------
+    # Transforms the rules into a tree - a hash-of-hashes, where the leaves,
+    # that contain the style specification are arrayrefs - see t/05_tree.t.
+    # This way definitions at different points of the CSS can be handled ok
+    # ----------------------------------------------------------------------
     my $rules = shift;
 
     my $h;
@@ -218,24 +235,30 @@ sub rules_to_tree {
     return $h;
 }
 
-use Mojo::Util qw/dumper/;
-
 sub sortkeys {
+    #--------------------------------------------------------------------------------
+    # sortkeys ensures that the rule tree keys are sorted as per css specs.
+    # Regular at-rules go first.
+    # The rest is sorted:
+    # - normal selector rules first, in alphabetical order
+    # - then at-rules, also alphabetically
+    #--------------------------------------------------------------------------------
     my @keys = @_;
 
+    # these are the at-rules that go in a specific order at the top
     my %h; @h{map { '@' . $_ } qw/charset import namespace font-face counter-style/} = (1..5);
 
     my $i = 0;
 
+    #--------------------------------------------
+    # schwartzian transform with forced sorting
+    #--------------------------------------------
     @keys =
-	map {
-	    $_->[2]
-	}
-	sort {
-	    $a->[0] <=> $b->[0] || $a->[2] cmp $b->[2]
-	}
+	map { $_->[2] }
+	sort { $a->[0] <=> $b->[0] || $a->[2] cmp $b->[2] || $a->[1] <=> $b->[1] }
 	map {
 	    my $k = ref $_ ? (join ' ', @$_) : $_;
+	    # first forced order at-rules then all selectors, then other at-rules
 	    my $n = $h{$k =~ s/\s.+//r} || ($k =~ /^\@/ ? (6 + scalar @keys + $i) : (6 + $i));
 	    my $r = [$n, $i, $_ ];
 	    $i++;
@@ -250,35 +273,38 @@ sub stringify_rule {
     my $v = shift;
     my $l = shift;
 
-    my $indenta = ' ' x ($l * 4);
-    my $indentb = ' ' x (($l + 1) * 4);
+    my $indent_a = ' ' x ($l * 4);
+    my $indent_b = ' ' x (($l + 1) * 4);
 
     my %repeat; @repeat{map { '@' . $_ } qw/font-face counter-style/} = qw/1 1/;
     my %single; @single{map { '@' . $_ } qw/namespace import charset/} = qw/1 1 1/;
 
     my $s;
 
+    # regular at-rules: namespace import charset
     if ($single{$k}) {
 	for my $r (@$v) {
 	    $s .= "$k " . (join '', (map {
 		$r->{$_} ?
-		    sprintf ("$indentb%s:%s;", $_, $r->{$_})
+		    sprintf ("$indent_b%s:%s;", $_, $r->{$_})
 		    :
-		    sprintf ("$indentb%s;", $_)
+		    sprintf ("$indent_b%s;", $_)
 		} sort keys %$r)) . "\n";
 	}
+    # at-rules that can be repeated, but should not be merged: font-face counter-style
     } elsif ($repeat{$k}) {
 	for my $r (@$v) {
-	    $s .= "$indenta$k {";
-	    $s = $s . "\n" . (join "\n", map { sprintf "$indentb%s : %s;", $_, $r->{$_} } sort keys %$r);
-	    $s .= "\n$indenta}\n";
+	    $s .= "$indent_a$k {";
+	    $s = $s . "\n" . (join "\n", map { sprintf "$indent_b%s : %s;", $_, $r->{$_} } sort keys %$r);
+	    $s .= "\n$indent_a}\n";
 	}
+    # all the rest
     } else {
-	$s = "$indenta$k {";
+	$s = "$indent_a$k {";
 	for my $r (@$v) {
-	    $s = $s . "\n" . (join "\n", map { sprintf "$indentb%s : %s;", $_, $r->{$_} } sort keys %$r);
+	    $s = $s . "\n" . (join "\n", map { sprintf "$indent_b%s : %s;", $_, $r->{$_} } sort keys %$r);
 	}
-	$s .= "\n$indenta}\n";
+	$s .= "\n$indent_a}\n";
     }
     return $s;
 }
@@ -304,14 +330,14 @@ sub stringify_tree {
 	my $key = shift;
 	my $level = shift || 0;
 
-	my $indenta = ' ' x ($level * 4);
+	my $indent_a = ' ' x ($level * 4);
 
 	for (sortkeys(keys %$tree)) {
 	    my $ref = ref $tree->{$_};
 	    if ($ref eq 'HASH') {
-		print $fh "$indenta$_ {";
+		print $fh "$indent_a$_ {";
 		__SUB__->($tree->{$_}, $_, $level+1);
-		print $fh "$indenta}\n";
+		print $fh "$indent_a}\n";
 	    } elsif ($ref eq 'ARRAY') {
 		print $fh stringify_rule( $_ => $tree->{$_}, $level);
 	    } else {
