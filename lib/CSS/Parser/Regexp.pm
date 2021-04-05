@@ -5,12 +5,10 @@ package CSS::Parser::Regexp;
 # ABSTRACT: Regexp-based CSS parser with at-rules support
 
 use Text::Balanced qw/extract_bracketed extract_codeblock/;
-use List::Util;
+use List::Util qw/reduce/;
 
 use strict;
 use warnings;
-
-# use Mojo::Util qw/dumper/;
 
 sub new {
     my $class = shift;
@@ -76,8 +74,10 @@ sub process_ats {
 
 sub strip_comments {
     my $css = shift;
+    # fix newlines
     $css =~ s/\r/\n/g;
     $css =~ s/\f/\n/g;
+    # strip comments
     $css =~ s/\/\*(?:(?!\*\/).)*\*\/\n?//sg;
     return $css;
 }
@@ -127,6 +127,8 @@ sub pre_process_rules {
     my $cum = shift || [];
     my $depth = shift || 1;
 
+    no warnings 'recursion';
+
     $css = strip_comments($css);
 
     return $cum unless $css =~ /\w/;
@@ -147,7 +149,6 @@ sub pre_process_rules {
 	$cum->[-1]->{style} = parse_style($style);
     }
     pre_process_rules($rest, $cum, $depth);
-
     return $cum;
 }
 
@@ -155,7 +156,9 @@ sub post_process_rules {
     my @rules = @{shift()};
     my $i;
 
-    my $conditionals = qr/\@media\b|\@supports\b|\@document\b/;
+    # this needs to match all at-rules that have inner content
+    # that looks like rules
+    my $conditionals = qr/\@media\b|\@supports\b|\@document\b|\@.*keyframes/;
 
     for (@rules) {
 	$_->{seq} = $i++;
@@ -171,6 +174,7 @@ sub post_process_rules {
 
 sub process_rules {
     my $rules = pre_process_rules(shift());
+    print dumper $rules;
     return post_process_rules($rules);
 }
 
@@ -188,6 +192,9 @@ sub strip_brackets {
     for ($t) {
 	s/^\s*\{\s*//;
 	s/\s*\}\s*$//;
+	#--------------------------------------
+	# this could be removed for debugging
+	#--------------------------------------
 	s/\n/ /g;
 	s/ +/ /g;
     }
@@ -201,7 +208,7 @@ sub block_type {
     #---------------------------------------
     for ($t) {
 	# begins with @ is an at-rule
-	/^\s*\@\w+/   && return 'at';
+	/^\s*\@[\-\w]+/   && return 'at';
 	# begins with something followed by a bracket
 	# is a selector + style
 	/\s*[^\{]+\s*(?<!\")\{/  && return 'sel';
@@ -214,7 +221,7 @@ sub block_type {
 #----------------------------------------------
 
 sub pointer_to_element {
-  return List::Util::reduce(sub { \($$a->{$b}) }, \shift, @_);
+    return reduce(sub { \($$a->{$b}) }, \shift(), @_);
 }
 
 sub rules_to_tree {
