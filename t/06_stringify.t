@@ -102,4 +102,6 @@ my $stringified = <<'STR'
 STR
     ;
 
+$\ = "\n";
+
 ok($stringified eq $r->stringify, 'stringify');
