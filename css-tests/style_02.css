@@ -1,0 +1,21 @@
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/OpenSans-Regular-webfont.woff2") format("woff2"),
+       url("/fonts/OpenSans-Regular-webfont.woff") format("woff");
+}
+
+@import url("chrome://communicator/skin/");
+@import url("fineprint.css") print;
+
+.bigtiles .leaflet-control-zoom-out,
+.bigtiles .leaflet-control-zoom-out:visited,
+.bigtiles .leaflet-control-zoom-in,
+.bigtiles .leaflet-control-zoom-in:visited
+{ color: black }
+
+.bigtiles a { text-decoration:none }
+.bigtiles a {color:#dddddd;}         /* Unvisited link  */
+.bigtiles a:visited {color:#dddddd;} /* Visited link    */
+.bigtiles a:hover {color:#dddddd;}   /* Mouse over link */
+.bigtiles a:active {color:#dddddd;}  /* Selected link   */
+
