@@ -156,9 +156,14 @@ sub post_process_rules {
     my @rules = @{shift()};
     my $i;
 
-    # this needs to match all at-rules that have inner content
-    # that looks like rules
-    my $conditionals = qr/\@media\b|\@supports\b|\@document\b|\@.*keyframes/;
+    #-------------------------------------------------------------------------------
+    # this needs to match all at-rules that have inner content that looks like rules
+    # it is probably the most critical failure spot
+    # it needs to be kept in synch with the list of nested rules at
+    # https://developer.mozilla.org/en-US/docs/Web/CSS/At-rule
+    #-------------------------------------------------------------------------------
+
+    my $conditionals = qr/\@media\b|\@font\-feature|\@supports\b|\@document\b|\@.*keyframes/;
 
     for (@rules) {
 	$_->{seq} = $i++;
