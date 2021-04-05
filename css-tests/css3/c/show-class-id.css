@@ -1,3 +1,0 @@
-.arena *[class]::before {content: "[" attr(class) "] ";}
-.arena *[id]::before {content: "[" attr(id) "] ";}
-.arena *[class][id]::before {content: "[" attr(class) " / #" attr(id) "] ";}
