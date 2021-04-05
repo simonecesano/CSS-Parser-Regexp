@@ -8,7 +8,7 @@ use warnings;
 my @files;
 
 find(sub {
-	 push @files, $File::Find::name if -f
+	 push @files, $File::Find::name if (-f && /\.css$/)
      }, 'css-tests');
 
 my $p = CSS::Parser::Regexp->new;
@@ -16,7 +16,6 @@ my $p = CSS::Parser::Regexp->new;
 for my $f (@files) {
     open my $fh, '<', $f or die "Can't open file $!";
     my $css = do { local $/; <$fh> };
-
     $p->parse($css);
     ok($p->stringify, "stringify $f")
 }
